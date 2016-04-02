@@ -1,0 +1,117 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace массивОбъектовЛОЛ
+{
+    class Program
+    {
+        // за основу идеи это программы была взята система случайных недельных персонажей игры League of Legends. Каждую неделю случайным образом на выбор предлагается по несколько героев и бывает очень часто, что герои дублируются с предыдущих недель при том что их общее количество больше 100.
+        // я решил написать код который будет добавлять по 5 случайных геров в условную неделю, без повторений одних и тех же героев.
+        // другими словами программа создает объекты с 2мя случайными значениями и 1 порядковое значение в виде имени, затем выводит значения объектов на экран (по 5 объектов за цикл) в случайном порядке, так чтобы объекты не повторялись.
+
+        static void Main(string[] args) 
+        {
+            int num_create = 100;
+            Heroes.createHeroes(num_create); // создаем героев
+            int numHero = 0;
+            int week = 0;
+            
+            for (int i = 0; i < 20; i++)
+            {
+                Event.r_sortHeroes(5); // проверяем были ли
+                int numZero = 0;
+                while (numZero < 5) // сздает по 5 героев в условной неделе
+                {
+                    Console.WriteLine(week + " неделя добавляет героя: " + Event.eventHeroes[numHero].name +" " + Event.eventHeroes[numHero].hClass +" " + Event.eventHeroes[numHero].hp);
+                    numHero++;
+                    numZero++;
+                }
+                week++;
+            }
+            
+            Event.eventHeroes.RemoveRange(0, 100); //можно очистить частично (от 0) тогда будет добавляться к оставшейся части (если взять от 50 то может попасться герой который выпадал 10+ недель назад)
+            if (Event.eventHeroes.Count<Heroes>() == 0)
+                Console.WriteLine("Список очищен");
+                
+            Console.ReadKey();
+        }
+    }
+
+
+    class Heroes // создает героев с параметрами: имя, hp и класс. 
+    {
+        public static List<Heroes> heroes = new List<Heroes>();
+        public static string[] m_hClass = new string[4] { "TANK", "SUPP", "MAGE", "ADC" };
+
+        public string name;
+        public string hClass;
+        public int hp;
+
+        public static void createHeroes(int kol) //создает список героев
+        {
+            Random rr = new Random();
+            int n = -1;
+
+            for (int i = 0; i < kol; i ++) // сортирует созданных героев по классам в зависимости от параметра hp
+            {
+                n++;
+                int r_hClass = rr.Next(1, 3);
+                int r_hp = rr.Next(100, 500);
+
+                Heroes newHeroes = new Heroes();
+                newHeroes.name = n.ToString();
+                newHeroes.hp = r_hp;
+                
+                if (r_hp >= 400)
+                    newHeroes.hClass = m_hClass[0];
+
+                if (r_hp < 400 && r_hp >= 300)
+                    newHeroes.hClass = m_hClass[3];
+
+                if (r_hp < 300)
+                    newHeroes.hClass = m_hClass[r_hClass];
+                    
+                heroes.Add(newHeroes);
+            }
+        }
+    }
+
+    class Event // создает список героев из списка существующих героев без совпадений (без одинаковых героев)
+    {
+        public static List<Heroes> eventHeroes = new List<Heroes>();
+        
+        public static void r_sortHeroes(int howHeroes)
+        {
+            Random rr = new Random();
+            for (int i = 0; i < howHeroes; i++) // кол героев которое хотим создать
+            {
+                int r_eventheroes = rr.Next(0, 100);
+                int kolList = eventHeroes.Count<Heroes>();
+
+                if (kolList == 0)
+                    eventHeroes.Add(Heroes.heroes[r_eventheroes]);
+                else
+                    {
+                    int proverka = 0;
+                    for (int ii = 0; ii < kolList; ii++) // проверка есть ли совпадения
+                        {
+                        if (eventHeroes[ii].name == r_eventheroes.ToString())
+                        {
+                            i--;
+                            break;
+                        }
+                        else
+                        {
+                            proverka ++;
+                            if (proverka == kolList)
+                                eventHeroes.Add(Heroes.heroes[r_eventheroes]);
+                        }
+                        }   
+                    }
+            }
+        }
+    }
+}
